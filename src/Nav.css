@@ -6,6 +6,9 @@
     padding: 20px;
     z-index: 1;
 
+    transition-timing-function: ease-in;
+    transition: all 0.5s;
+
 }
 .nav_contents{
     display: flex;
@@ -14,6 +17,7 @@
 
 .nav_logo{
     position:fixed;
+    top: 10px;
     left:0;
     width: 80px;
     object-fit: contain;
