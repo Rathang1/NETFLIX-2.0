@@ -8,6 +8,24 @@ import { loadStripe } from '@stripe/stripe-js';
 function PlanScreen() {
     const [products, setProducts] = useState([]);
     const user = useSelector(selectUser);
+    const [subscription, setSubscription] = useState(null);
+
+    useEffect(() => {
+        db.collection('customers')
+        .doc(user.uid)
+        .collection('subscriptions')
+        .get()
+        .then(querySnapshot => {
+            querySnapshot.forEach(async subscription => {
+                setSubscription({
+                    role: subscription.data().role,
+                    current_period_end: subscription.data().current_period_end.seconds,
+                    current_period_start: subscription.data().current_period_start.seconds,
+                });
+            });
+        });
+    }, [user.uid]);
+
 
     useEffect(() => {
         db.collection('products')
@@ -27,6 +45,8 @@ function PlanScreen() {
         setProducts(products);
     });
 }, []);
+
+console.log(subscription);
 
 const loadCheckout = async (priceId) => {
     const docRef = await db
@@ -55,15 +75,18 @@ const loadCheckout = async (priceId) => {
 
   return (
     <div className='planScreen'>
+        <br />
+        {subscription && <p>Renewal date: {new Date(subscription?.current_period_end * 1000).toLocaleDateString()}</p>}
     {Object.entries(products).map(([productId,  productData]) => {
+        const isCurrentPackage = productData.name?.toLowerCase().includes(subscription?.role);
         return (
-            <div className="planScreen__plan">
+            <div key={productId} className={`${isCurrentPackage && "planScreen__plan--disabled"} planScreen__plan`}>
                 <div className="planScreen__info">
                     <h5>{productData.name}</h5>
                     <h6>{productData.description}</h6>
                 </div>
-                <button onClick={() => loadCheckout(productData.prices.priceId)}> 
-                    Subscribe 
+                <button onClick={() => !isCurrentPackage && loadCheckout(productData.prices.priceId)}> 
+                    {isCurrentPackage ? 'Current Package' : 'Subscribe'}
                 </button> 
             </div>
         );
