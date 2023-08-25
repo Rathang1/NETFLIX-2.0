@@ -4,12 +4,13 @@ import HomeScreen from './screens/HomeScreen';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginScreen from './screens/LoginScreen';
 import { auth } from './firebase';
-import { useDispatch } from 'react-redux';
-import { login, logout } from './features/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, logout, selectUser } from './features/userSlice';
+import ProfileScreen from './screens/ProfileScreen';
 
 
 function App() {
-  const user = null;
+  const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -22,11 +23,11 @@ function App() {
         }))
       } else {
         // Logged out
-        dispatch(logout);
+        dispatch(logout());
       }
     });
     return unsubscribe;
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className="app">
@@ -35,6 +36,7 @@ function App() {
         <LoginScreen />
       ): (
         <Routes>
+          <Route path="/profile" element={<ProfileScreen />} />
           <Route path="/" element={<HomeScreen />} />
         </Routes>
       )} 
